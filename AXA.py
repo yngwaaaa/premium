@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
-# test
 
-# In[3]:
+# In[1]:
 
 
 import AXA_func as AXA
@@ -17,34 +16,20 @@ import sys
 import random
 
 
-# In[4]:
+# In[2]:
 
 
 FILE_NAME=input('ファイル名を入力（拡張子.xlsmは除く）')
 SHEET_NAME='AXA打鍵'
-BASE_BAT_SIZE=5 #バッチサイズ。一度の打鍵件数
-
-#最初にバックアップファイルがない場合に作成
-if os.path.isfile(FILE_NAME+'_backup.xlsm'):
-    pass
-else:
-    wb=xl.load_workbook(FILE_NAME+'.xlsm',keep_vba=True)
-    wb.save(FILE_NAME+'_backup.xlsm')
+BASE_BAT_SIZE=3 #バッチサイズ。一度の打鍵件数
 
 #打鍵する行のリストの箱を用意
 calc_row=list(range(1))
 
 #打鍵、バッチ単位のループ
 while len(calc_row) > 0:
-    try:
-        df=pd.read_excel(FILE_NAME+'.xlsm',sheet_name=SHEET_NAME)
-        wb=xl.load_workbook(FILE_NAME+'.xlsm',keep_vba=True)    #ループ中に出力するために、WBも読み込んでおく
-        wb.save(FILE_NAME+'_backup.xlsm')#読み込み成功したらバックアップを上書き
-    except:#エラーが起きたらバックアップファイルから読み込む
-        print('File load error')
-        df=pd.read_excel(FILE_NAME+'_backup.xlsm',sheet_name=SHEET_NAME)
-        wb=xl.load_workbook(FILE_NAME+'_backup.xlsm',keep_vba=True)    #ループ中に出力するために、WBも読み込んでおく
-        wb.save(FILE_NAME+'.xlsm')
+    df=pd.read_excel(FILE_NAME+'.xlsm',sheet_name=SHEET_NAME)
+    wb=xl.load_workbook(FILE_NAME+'.xlsm',keep_vba=True)    #ループ中に出力するために、WBも読み込んでおく
 
     #列を追加
     df['車有P_賠償']=''
@@ -73,7 +58,7 @@ while len(calc_row) > 0:
     #打鍵する行を特定
     calc_row=list()
     #数値のはいっていない行のうち、バッチサイズの行だけExcel上の行番号を取得（dfのindex+2）する。
-    BAT_SIZE=BASE_BAT_SIZE + random.randint(0, 5) #並列処理時にデータファイルアクセスのタイミングをずらすために乱数を加算
+    BAT_SIZE=BASE_BAT_SIZE + random.randint(0, 3) #並列処理時にデータファイルアクセスのタイミングをずらすために乱数を加算
     calc_row=list(df[(df['車有P'] == 'E') | (df['車有P'].isna())].index[0:BAT_SIZE]+2)
     print(calc_row)
 
@@ -81,6 +66,10 @@ while len(calc_row) > 0:
     for j in calc_row:
         ws.cell(row=j, column=80).value = '打鍵中' 
     wb.save(FILE_NAME+'.xlsm')#いったん保存
+
+    get_ipython().system('git add .')
+    get_ipython().system('git commit -m "hoge"')
+    get_ipython().system('git push origin main')
 
     #####打鍵、行単位のループ#####################################  
     for i in tqdm(calc_row):
@@ -93,6 +82,7 @@ while len(calc_row) > 0:
     #####行単位のループ終了######################################
 
     ########並列で実行するため、あらためて現時点の最新版のファイルを読み出して結果を追加
+    get_ipython().system('git pull origin main')
     try:
         wb=xl.load_workbook(FILE_NAME+'.xlsm',keep_vba=True)
         wb.save(FILE_NAME+'_backup.xlsm')#読み込み成功したらバックアップを上書き
@@ -119,10 +109,9 @@ while len(calc_row) > 0:
         ws.cell(row=i, column=93).value = df.loc[i-2,'新車保険金額エラー']
 
     wb.save(FILE_NAME+'.xlsm')
-#バッチ単位のループ終了########################################
 
-#バックアップを削除
-os.remove(FILE_NAME+'_backup.xlsm')
+    get_ipython().system('git pull origin main')
+#バッチ単位のループ終了########################################
 
     
 
