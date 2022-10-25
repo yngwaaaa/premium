@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import AXA_func as AXA
@@ -14,9 +14,10 @@ import openpyxl as xl
 import os
 import sys
 import random
+import subprocess
 
 
-# In[2]:
+# In[ ]:
 
 
 FILE_NAME=input('ファイル名を入力（拡張子.xlsmは除く）')
@@ -67,9 +68,9 @@ while len(calc_row) > 0:
         ws.cell(row=j, column=80).value = '打鍵中' 
     wb.save(FILE_NAME+'.xlsm')#いったん保存
 
-    get_ipython().system('git add .')
-    get_ipython().system('git commit -m "hoge"')
-    get_ipython().system('git push origin main')
+    subprocess.run(['git', 'add', '.'])
+    subprocess.run(['git', 'commit', '-m','"hoge"'])
+    subprocess.run(['git','push','origin','main'])
 
     #####打鍵、行単位のループ#####################################  
     for i in tqdm(calc_row):
@@ -82,15 +83,9 @@ while len(calc_row) > 0:
     #####行単位のループ終了######################################
 
     ########並列で実行するため、あらためて現時点の最新版のファイルを読み出して結果を追加
-    get_ipython().system('git pull origin main')
-    try:
-        wb=xl.load_workbook(FILE_NAME+'.xlsm',keep_vba=True)
-        wb.save(FILE_NAME+'_backup.xlsm')#読み込み成功したらバックアップを上書き
-    except:#エラーが起きたらバックアップファイルを復旧
-        print('File load error')
-        wb=xl.load_workbook(FILE_NAME+'_backup.xlsm',keep_vba=True)
-        wb.save(FILE_NAME+'.xlsm')
-    
+    subprocess('git', 'pull', 'origin', 'main')
+    wb=xl.load_workbook(FILE_NAME+'.xlsm',keep_vba=True)
+   
     ws=wb[SHEET_NAME]
     for i in calc_row:
         ws.cell(row=i, column=80).value = df.loc[i-2,'車有P'] 
@@ -109,8 +104,6 @@ while len(calc_row) > 0:
         ws.cell(row=i, column=93).value = df.loc[i-2,'新車保険金額エラー']
 
     wb.save(FILE_NAME+'.xlsm')
-
-    get_ipython().system('git pull origin main')
 #バッチ単位のループ終了########################################
 
     
