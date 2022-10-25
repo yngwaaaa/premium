@@ -1,6 +1,6 @@
 source .zshrc
 
- cd /Users/s87gawa/Library/CloudStorage/GoogleDrive-s.87gawa@gmail.com/マイドライブ/premium
+ cd /Users/s87gawa/premium/
 
 conda activate py38
 
